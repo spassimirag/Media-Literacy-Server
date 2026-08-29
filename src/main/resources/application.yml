@@ -1,0 +1,18 @@
+logging:
+  pattern:
+    console: ""            # stdout carries the JSON-RPC protocol — no logs allowed there
+  file:
+    name: logs/media-literacy-mcp.log   # logs still available here for debugging
+
+spring:
+  main:
+    web-application-type: none   # stdio servers don't need an embedded web server
+    banner-mode: off             # keep stdout clean — stdio transport uses it for protocol messages
+  application:
+    name: media-literacy-mcp-server
+  ai:
+    mcp:
+      server:
+        name: media-literacy-mcp-server
+        version: 0.1.0
+        type: SYNC
