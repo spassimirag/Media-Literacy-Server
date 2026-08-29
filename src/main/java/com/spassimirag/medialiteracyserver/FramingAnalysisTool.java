@@ -18,7 +18,7 @@ public class FramingAnalysisTool {
 
     private static final String ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
     private static final String API_KEY = System.getenv("ANTHROPIC_API_KEY");
-    private static final String MODEL = "claude-sonnet-4-6";
+    private static final String MODEL = "claude-sonnet-5";
 
     private final HttpClient httpClient = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10))
