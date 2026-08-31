@@ -28,6 +28,8 @@ dependencies {
     implementation 'org.springframework.ai:spring-ai-starter-mcp-server'
     // Jackson for building/parsing the Anthropic API JSON (version managed by the Spring Boot BOM).
     implementation 'com.fasterxml.jackson.core:jackson-databind'
+    // jsoup for stripping fetched articles down to readable text.
+    implementation 'org.jsoup:jsoup:1.18.3'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
