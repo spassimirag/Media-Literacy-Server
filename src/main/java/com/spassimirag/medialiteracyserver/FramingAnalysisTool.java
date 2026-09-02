@@ -5,25 +5,29 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
 
 @Service
 public class FramingAnalysisTool {
 
     private static final String ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
-    private static final String API_KEY = System.getenv("ANTHROPIC_API_KEY");
     private static final String MODEL = "claude-sonnet-5";
 
-    private final HttpClient httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
-            .build();
+    private final HttpClient httpClient;
+    private final String apiKey;
     private final ObjectMapper mapper = new ObjectMapper();
+
+    public FramingAnalysisTool(HttpClient anthropicHttpClient,
+                               @Value("${ANTHROPIC_API_KEY:}") String apiKey) {
+        this.httpClient = anthropicHttpClient;
+        this.apiKey = apiKey;
+    }
 
     @McpTool(description = "Analyzes a piece of text for framing patterns — loaded language, "
             + "one-sided phrasing, emotionally charged wording — without judging whether the "
@@ -32,7 +36,7 @@ public class FramingAnalysisTool {
             @McpToolParam(description = "The text to analyze, e.g. an article excerpt or a social media post.", required = true)
             String text) throws Exception {
 
-        if (API_KEY == null || API_KEY.isBlank()) {
+        if (apiKey == null || apiKey.isBlank()) {
             return "Error: ANTHROPIC_API_KEY environment variable is not set.";
         }
 
@@ -42,7 +46,7 @@ public class FramingAnalysisTool {
                 wording, or missing context. Do NOT judge whether the content is true, false, \
                 or misleading. List 2-4 specific observations, each tied to a phrase from the \
                 text. If the text reads as neutral in tone, say so plainly.
- 
+
                 TEXT:
                 %s
                 """.formatted(text);
@@ -58,7 +62,7 @@ public class FramingAnalysisTool {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(ANTHROPIC_API_URL))
-                .header("x-api-key", API_KEY)
+                .header("x-api-key", apiKey)
                 .header("anthropic-version", "2023-06-01")
                 .header("content-type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(requestBody)))
@@ -74,4 +78,3 @@ public class FramingAnalysisTool {
         return root.at("/content/0/text").asText("(no text found in response)");
     }
 }
-
