@@ -18,10 +18,11 @@ public class ArticleFetchTool {
 
     private static final int MAX_CHARS = 8000;
 
-    private final HttpClient httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
-            .followRedirects(HttpClient.Redirect.NORMAL)
-            .build();
+    private final HttpClient httpClient;
+
+    public ArticleFetchTool(HttpClient httpClient) {
+        this.httpClient = httpClient;
+    }
 
     @McpTool(description = "Fetches a web page by URL and returns its readable article text, "
             + "stripped of HTML, scripts, and navigation. Use this to obtain the text that the "
