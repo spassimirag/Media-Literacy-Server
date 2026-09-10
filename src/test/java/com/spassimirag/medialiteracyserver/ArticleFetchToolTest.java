@@ -1,13 +1,28 @@
 package com.spassimirag.medialiteracyserver;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.net.http.HttpClient;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@ExtendWith(MockitoExtension.class)
 class ArticleFetchToolTest {
 
-    private final ArticleFetchTool tool = new ArticleFetchTool();
+    @Mock
+    private HttpClient httpClient;
+
+    private ArticleFetchTool tool;
+
+    @BeforeEach
+    void setUp() {
+        tool = new ArticleFetchTool(httpClient);
+    }
 
     @Test
     void extractsArticleTextAndDropsChrome() {

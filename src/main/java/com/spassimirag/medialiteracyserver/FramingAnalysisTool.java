@@ -12,6 +12,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 
 @Service
 public class FramingAnalysisTool {
@@ -23,9 +24,9 @@ public class FramingAnalysisTool {
     private final String apiKey;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public FramingAnalysisTool(HttpClient anthropicHttpClient,
+    public FramingAnalysisTool(HttpClient httpClient,
                                @Value("${ANTHROPIC_API_KEY:}") String apiKey) {
-        this.httpClient = anthropicHttpClient;
+        this.httpClient = httpClient;
         this.apiKey = apiKey;
     }
 
@@ -62,6 +63,7 @@ public class FramingAnalysisTool {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(ANTHROPIC_API_URL))
+                .timeout(Duration.ofSeconds(60))
                 .header("x-api-key", apiKey)
                 .header("anthropic-version", "2023-06-01")
                 .header("content-type", "application/json")
