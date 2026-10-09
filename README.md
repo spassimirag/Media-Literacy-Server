@@ -20,7 +20,7 @@ Flesch Reading Ease (1948) and Flesch–Kincaid Grade Level (1975) are regressio
 
 ## Requirements
 
-- Java 17+
+- Java 21+
 - An [Anthropic API key](https://console.anthropic.com/) (only needed for `analyzeFraming`; the other tools work without one)
 
 ## Build
