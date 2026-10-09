@@ -18,7 +18,7 @@ import java.time.Duration;
 public class FramingAnalysisTool {
 
     private static final String ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
-    private static final String MODEL = "claude-sonnet-5";
+    private static final String MODEL = "claude-sonnet-5-5";
 
     private final HttpClient httpClient;
     private final String apiKey;
