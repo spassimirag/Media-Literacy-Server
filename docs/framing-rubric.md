@@ -48,7 +48,7 @@ Answer yes if the text states fault as fact on its own authority, even in neutra
 Does the text present only one viewpoint on a disputed issue?
 
 **Rule:** the other side only counts if its view is actually stated, not just mentioned (e.g. "though some critics
-complained" does not count).
+complained" does not count). If the text is not about a disputed issue (e.g. a storm or a car crash), answer no.
 
 - Yes example: "The city passed the new curfew law after supporters argued it would keep neighborhoods safe."
 - Yes example: "The city passed the new curfew law after supporters argued it would keep neighborhoods safe, though
