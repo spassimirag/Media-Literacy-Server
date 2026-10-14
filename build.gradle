@@ -20,6 +20,20 @@ repositories {
 
 }
 
+sourceSets {
+    eval {
+        // eval code can use the server's classes (e.g. reuse its HTTP setup later)
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+configurations {
+    // eval code gets the same libraries as the main code
+    evalImplementation.extendsFrom implementation
+    evalRuntimeOnly.extendsFrom runtimeOnly
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation platform('org.springframework.ai:spring-ai-bom:2.0.0-M6')
@@ -30,10 +44,19 @@ dependencies {
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     // jsoup for stripping fetched articles down to readable text.
     implementation 'org.jsoup:jsoup:1.18.3'
+    evalImplementation 'org.apache.commons:commons-csv:1.14.1'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+tasks.register('runEval', JavaExec) {
+    group = 'verification'
+    description = 'Runs the framing judge evaluation'
+    classpath = sourceSets.eval.runtimeClasspath
+    mainClass = 'com.spassimirag.medialiteracyserver.eval.EvalRunner'
+    workingDir = rootDir
 }
