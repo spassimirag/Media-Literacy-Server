@@ -26,6 +26,11 @@ sourceSets {
         compileClasspath += sourceSets.main.output
         runtimeClasspath += sourceSets.main.output
     }
+    test {
+        // eval code is unit-tested alongside the server, so CI covers it too
+        compileClasspath += sourceSets.eval.output
+        runtimeClasspath += sourceSets.eval.output
+    }
 }
 
 configurations {
