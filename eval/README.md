@@ -45,7 +45,15 @@ LLM to judge. Results here are a first check of the checklist and the judge, not
 |---|---|
 | `data/texts.csv` | `id`, `text` |
 | `data/human_labels.csv` | `id`, then `yes`/`no` for each of the three questions |
+| `data/labeling_notes.md` | Texts where the checklist felt unclear while labeling |
+| `results/judge_labels.csv` | Same columns as `human_labels.csv`, then `model`, `run_at` and the judge's reason for each answer. Texts where the judge call failed are left out (they are listed in the run output). |
 
 ## How to run
 
-Coming soon.
+```bash
+export ANTHROPIC_API_KEY=...
+./gradlew runEval
+```
+
+This sends each text to the judge and writes `results/judge_labels.csv`, replacing the previous run. Set
+`JUDGE_MODEL` to use a different model (default `claude-sonnet-5-5`).
