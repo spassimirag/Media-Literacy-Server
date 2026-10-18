@@ -18,6 +18,14 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class FramingAnalysisToolTest {
 
+    // An API reply whose text block holds the judge's JSON answers (quotes escaped, since it's a string inside JSON).
+    private static final String JUDGE_REPLY = """
+            {"model": "claude-sonnet-5-5", "stop_reason": "end_turn", "content": [{"type": "text", "text": \
+            "{\\"charged_words\\": {\\"reason\\": \\"'crisis spirals' is charged.\\", \\"answer\\": \\"yes\\"}, \
+            \\"built_in_blame\\": {\\"reason\\": \\"No one is blamed.\\", \\"answer\\": \\"no\\"}, \
+            \\"only_one_side\\": {\\"reason\\": \\"Not a disputed issue.\\", \\"answer\\": \\"no\\"}}"}]}
+            """;
+
     @Mock
     private HttpClient httpClient;
 
@@ -25,15 +33,25 @@ class FramingAnalysisToolTest {
     private HttpResponse<String> response;
 
     @Test
-    void returnsClaudeTextOnSuccess() throws Exception {
+    void returnsTheThreeChecklistAnswersWithReasons() throws Exception {
         FramingAnalysisTool tool = new FramingAnalysisTool(httpClient, "test-key");
-        apiReturns(200, """
-                {"content": [{"type": "text", "text": "Loaded phrase: 'crisis spirals'"}]}
-                """);
+        apiReturns(200, JUDGE_REPLY);
 
         String result = tool.analyzeFraming("The crisis spirals out of control.");
 
-        assertEquals("Loaded phrase: 'crisis spirals'", result);
+        assertEquals("""
+                Framing checklist results:
+
+                1. Charged words: yes
+                   'crisis spirals' is charged.
+
+                2. Built-in blame: no
+                   No one is blamed.
+
+                3. Only one side: no
+                   Not a disputed issue.
+
+                """, result);
     }
 
     @Test
@@ -55,19 +73,7 @@ class FramingAnalysisToolTest {
 
         String result = tool.analyzeFraming("some text");
 
-        assertTrue(result.startsWith("Error calling Anthropic API: HTTP 401"), result);
-    }
-
-    @Test
-    void emptyResponseReturnsFallbackMessage() throws Exception {
-        FramingAnalysisTool tool = new FramingAnalysisTool(httpClient, "test-key");
-        apiReturns(200, """
-                {"content": []}
-                """);
-
-        String result = tool.analyzeFraming("some text");
-
-        assertEquals("(no text found in response)", result);
+        assertTrue(result.startsWith("Error: Anthropic API returned HTTP 401"), result);
     }
 
     private void apiReturns(int status, String body) throws Exception {

@@ -1,4 +1,4 @@
-package com.spassimirag.medialiteracyserver.eval;
+package com.spassimirag.medialiteracyserver.judge;
 
 /**
  * The judge's answer to one checklist question.

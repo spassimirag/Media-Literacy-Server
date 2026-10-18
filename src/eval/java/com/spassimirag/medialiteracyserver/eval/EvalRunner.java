@@ -1,5 +1,9 @@
 package com.spassimirag.medialiteracyserver.eval;
 
+import com.spassimirag.medialiteracyserver.judge.JudgeException;
+import com.spassimirag.medialiteracyserver.judge.JudgeResult;
+import com.spassimirag.medialiteracyserver.judge.RubricAnswer;
+import com.spassimirag.medialiteracyserver.judge.RubricJudge;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVPrinter;

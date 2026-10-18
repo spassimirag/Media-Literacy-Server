@@ -10,7 +10,7 @@ Built with Spring Boot and Spring AI's MCP server support, speaking JSON-RPC ove
 |------|------|--------------|
 | `fetchArticle` | Deterministic | Fetches a URL and extracts readable article text (jsoup), stripped of scripts, navigation, and boilerplate. |
 | `scoreReadability` | Deterministic | Scores text with the Flesch Reading Ease and Flesch–Kincaid Grade Level formulas — pure text statistics, no external calls. |
-| `analyzeFraming` | LLM-backed | Asks Claude (via the Anthropic API) to point out framing patterns: loaded language, one-sided phrasing, emotionally charged wording. Explicitly instructed not to rule on truth. |
+| `analyzeFraming` | LLM-backed | Checks a text against the [framing checklist](docs/framing-rubric.md) (charged words, built-in blame, only one side) using the same LLM judge the [eval](eval/README.md) measures. Returns yes/no with a reason for each question. Does not rule on truth. |
 
 The tools are independent classes with no references to each other. Composition happens in the MCP client: given a URL, the assistant chains `fetchArticle` → `scoreReadability` → `analyzeFraming` on its own.
 
@@ -73,7 +73,7 @@ sequenceDiagram
     Note over JVM,API: only analyzeFraming makes an outbound call
     CC->>JVM: stdin - tools/call analyzeFraming
     JVM->>API: HTTPS POST /v1/messages
-    API-->>JVM: framing observations
+    API-->>JVM: checklist answers with reasons
     JVM-->>CC: stdout - result
 ```
 

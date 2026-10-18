@@ -1,10 +1,9 @@
-package com.spassimirag.medialiteracyserver.eval;
+package com.spassimirag.medialiteracyserver.judge;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -13,9 +12,8 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 
 /**
- * LLM judge that answers the three framing checklist questions for a text, so its answers can be
- * compared with the human labels. Separate from the analyzeFraming MCP tool on purpose: that tool
- * gives free-text observations, this one gives yes/no answers in a fixed shape.
+ * LLM judge that answers the three framing checklist questions for a text. Used both by the
+ * analyzeFraming MCP tool and by the eval, which compares its answers with the human labels.
  */
 public class RubricJudge {
 

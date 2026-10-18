@@ -1,4 +1,4 @@
-package com.spassimirag.medialiteracyserver.eval;
+package com.spassimirag.medialiteracyserver.judge;
 
 /**
  * The judge's answers for one text, one per checklist question in docs/framing-rubric.md.

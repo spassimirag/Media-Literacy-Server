@@ -75,3 +75,9 @@ tasks.register('agreement', JavaExec) {
     mainClass = 'com.spassimirag.medialiteracyserver.eval.AgreementReport'
     workingDir = rootDir
 }
+
+// Ship the framing rubric with the server, so docs/framing-rubric.md stays the one source of truth
+// for both the analyzeFraming tool and the eval.
+processResources {
+    from('docs/framing-rubric.md')
+}

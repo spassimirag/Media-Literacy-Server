@@ -1,8 +1,9 @@
-package com.spassimirag.medialiteracyserver.eval;
+package com.spassimirag.medialiteracyserver.judge;
 
 /**
  * The judge could not produce a usable answer for a text (API error, refusal, malformed output).
- * Checked so the eval runner has to decide what to do per text instead of aborting the run.
+ * Checked so callers have to decide what to do: the eval runner skips the text, the MCP tool
+ * returns an error message.
  */
 public class JudgeException extends Exception {
 
