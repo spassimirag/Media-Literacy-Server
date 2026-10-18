@@ -37,7 +37,7 @@ LLM to judge. Results here are a first check of the checklist and the judge, not
    each text.
 3. **Agreement**: percent agreement per question.
 4. **Error analysis**: every disagreement is classified as a checklist ambiguity, a judge error, or a labeling
-   error, and the checklist is revised.
+   error, and the checklist is revised. See [`docs/error-analysis.md`](../docs/error-analysis.md).
 
 ## Files
 
