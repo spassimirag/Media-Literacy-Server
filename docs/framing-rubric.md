@@ -48,10 +48,26 @@ Answer yes if the text states fault as fact on its own authority, even in neutra
 Does the text present only one viewpoint on a disputed issue?
 
 **Rule:** the other side only counts if its view is actually stated, not just mentioned (e.g. "though some critics
-complained" does not count). If the text is not about a disputed issue (e.g. a storm or a car crash), answer no.
+complained" does not count).
+
+A **disputed issue** is a policy, decision or proposal on which people take opposing positions. Words like
+"unpopular", "controversial" or "victory" show that an issue is disputed. An event (e.g. a storm or a car crash) is
+not a disputed issue, even if the text blames someone for it: answer no. Blaming someone without giving their side
+is covered by question 2, not this one.
 
 - Yes example: "The city passed the new curfew law after supporters argued it would keep neighborhoods safe."
 - Yes example: "The city passed the new curfew law after supporters argued it would keep neighborhoods safe, though
   some critics complained."
 - No example: "The city passed the new curfew law, which supporters say improves safety but critics argue limits
   personal freedom."
+- No example: "A reckless driver caused a crash on Main Street on Thursday." (an event, not a disputed issue; the
+  blame is a question 2 matter)
+
+## Changes in v2
+
+Question 3 now defines "disputed issue", says that signals like "unpopular" count, and makes clear that blame for an
+event belongs to question 2. See [`error-analysis.md`](error-analysis.md) for why. The v1 human labels in
+`eval/data/human_labels.csv` were made with the previous version.
+
+**v2 has not been evaluated yet:** the texts were not labeled again and the judge was not run again under v2, so
+all published agreement numbers are for v1.
