@@ -37,6 +37,8 @@ configurations {
     // eval code gets the same libraries as the main code
     evalImplementation.extendsFrom implementation
     evalRuntimeOnly.extendsFrom runtimeOnly
+    // tests of eval code need the eval libraries too (e.g. commons-csv)
+    testImplementation.extendsFrom evalImplementation
 }
 
 dependencies {
@@ -63,5 +65,13 @@ tasks.register('runEval', JavaExec) {
     description = 'Runs the framing judge evaluation'
     classpath = sourceSets.eval.runtimeClasspath
     mainClass = 'com.spassimirag.medialiteracyserver.eval.EvalRunner'
+    workingDir = rootDir
+}
+
+tasks.register('agreement', JavaExec) {
+    group = 'verification'
+    description = 'Compares the saved judge labels with the human labels (no API calls)'
+    classpath = sourceSets.eval.runtimeClasspath
+    mainClass = 'com.spassimirag.medialiteracyserver.eval.AgreementReport'
     workingDir = rootDir
 }

@@ -21,7 +21,7 @@ public class EvalRunner {
 
     private static final Path TEXTS_FILE = Path.of("eval/data/texts.csv");
     private static final Path RUBRIC_FILE = Path.of("docs/framing-rubric.md");
-    private static final Path RESULTS_FILE = Path.of("eval/results/judge_labels.csv");
+    static final Path RESULTS_FILE = Path.of("eval/results/judge_labels.csv");
 
     public static void main(String[] args) throws IOException {
         List<EvalText> texts = loadTexts(TEXTS_FILE);
@@ -36,6 +36,8 @@ public class EvalRunner {
         writeResults(RESULTS_FILE, results);
 
         System.out.println("Wrote " + results.size() + " of " + texts.size() + " texts to " + RESULTS_FILE);
+
+        AgreementReport.print();
     }
 
     static List<EvalText> loadTexts(Path file) throws IOException {
