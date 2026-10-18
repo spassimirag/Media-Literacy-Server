@@ -35,7 +35,7 @@ LLM to judge. Results here are a first check of the checklist and the judge, not
    (`yes`/`no` per question).
 2. **LLM judge**: the checklist is included in the judge's prompt, and it returns a yes/no answer per question for
    each text.
-3. **Agreement**: percent agreement and Cohen's kappa per question.
+3. **Agreement**: percent agreement per question.
 4. **Error analysis**: every disagreement is classified as a checklist ambiguity, a judge error, or a labeling
    error, and the checklist is revised.
 
@@ -56,4 +56,10 @@ export ANTHROPIC_API_KEY=...
 ```
 
 This sends each text to the judge and writes `results/judge_labels.csv`, replacing the previous run. Set
-`JUDGE_MODEL` to use a different model (default `claude-sonnet-5-5`).
+`JUDGE_MODEL` to use a different model (default `claude-sonnet-5-5`). It ends by printing the agreement table.
+
+To print the agreement table again from the saved files, without calling the API:
+
+```bash
+./gradlew agreement
+```
