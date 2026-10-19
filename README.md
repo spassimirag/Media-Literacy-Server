@@ -2,7 +2,7 @@
 
 An [MCP](https://modelcontextprotocol.io) server that gives an AI assistant a set of *lenses* for examining how a piece of text is constructed — how hard it is to read, how it is framed, what language it leans on. It deliberately never judges whether content is **true**; it makes the construction visible and leaves the judgment with the reader.
 
-Built with Spring Boot and Spring AI's MCP server support, speaking JSON-RPC over stdio.
+Built with Spring Boot and Spring AI's MCP server support, speaking MCP over Streamable HTTP.
 
 ## Tools
 
@@ -31,53 +31,55 @@ Flesch Reading Ease (1948) and Flesch–Kincaid Grade Level (1975) are regressio
 
 This runs the tests and produces `build/libs/media-literacy-server-0.0.1-SNAPSHOT.jar`.
 
-## Register with Claude Code
+## Run and register with Claude Code
 
-The server uses the stdio transport: the client launches the jar as a subprocess and talks JSON-RPC over stdin/stdout (which is why `application.yml` silences all console output — stdout carries the protocol).
+Start the server (it listens on port 8080, MCP endpoint `/mcp`):
 
 ```bash
-claude mcp add media-literacy \
-  --env ANTHROPIC_API_KEY=sk-ant-... \
-  -- java -jar /absolute/path/to/build/libs/media-literacy-server-0.0.1-SNAPSHOT.jar
+export ANTHROPIC_API_KEY=sk-ant-...
+java -jar build/libs/media-literacy-server-0.0.1-SNAPSHOT.jar
+```
+
+In another terminal, register it:
+
+```bash
+claude mcp add --transport http media-literacy http://localhost:8080/mcp
 ```
 
 Then in a Claude Code session, `/mcp` shows the connection and its tool list. Try:
 
 > fetch https://en.wikipedia.org/wiki/Media_literacy and score its readability
 
-After changing the code, run `./gradlew build` again and reconnect — the client runs the jar, not your sources.
+After changing the code, run `./gradlew build` again and restart the server.
 
 ## How a tool call flows
 
-There is no port and no inbound HTTP: Claude Code launches the jar as a subprocess and the two talk JSON-RPC over the subprocess's stdin/stdout. Spring AI routes each incoming `tools/call` to the matching `@McpTool` method, the same way Spring MVC routes an HTTP request to a `@GetMapping` method.
+The server is a normal web application: Claude Code sends JSON-RPC messages as HTTP POSTs to `/mcp`. Spring AI routes each incoming `tools/call` to the matching `@McpTool` method, the same way Spring MVC routes an HTTP request to a `@GetMapping` method.
 
 ```mermaid
 sequenceDiagram
     participant U as You
     participant CC as Claude Code (MCP client)
-    participant JVM as media-literacy jar (subprocess)
+    participant JVM as media-literacy server (HTTP, port 8080)
     participant API as Anthropic API
 
     Note over CC,JVM: session start
-    CC->>JVM: launch java -jar media-literacy-server.jar
-    CC->>JVM: stdin - initialize, then tools/list
-    JVM-->>CC: stdout - fetchArticle, scoreReadability, analyzeFraming
+    CC->>JVM: POST /mcp - initialize, then tools/list
+    JVM-->>CC: fetchArticle, scoreReadability, analyzeFraming
 
     Note over U,JVM: "score readability on this text"
     U->>CC: prompt
-    CC->>JVM: stdin - tools/call scoreReadability {"text": "The cat sat..."}
+    CC->>JVM: POST /mcp - tools/call scoreReadability {"text": "The cat sat..."}
     JVM->>JVM: @McpTool method runs (pure math, never leaves the JVM)
-    JVM-->>CC: stdout - result "Flesch Reading Ease: 116.8 ..."
+    JVM-->>CC: result "Flesch Reading Ease: 116.8 ..."
     CC-->>U: answer grounded in the tool result
 
     Note over JVM,API: only analyzeFraming makes an outbound call
-    CC->>JVM: stdin - tools/call analyzeFraming
+    CC->>JVM: POST /mcp - tools/call analyzeFraming
     JVM->>API: HTTPS POST /v1/messages
     API-->>JVM: checklist answers with reasons
-    JVM-->>CC: stdout - result
+    JVM-->>CC: result
 ```
-
-Anything else printed to stdout would land in the middle of that JSON stream and corrupt it — which is why `application.yml` disables the banner and console logging, and why debug output in this project must go to the log file, never `System.out`.
 
 ## Tests
 
@@ -95,7 +97,7 @@ src/main/java/.../ArticleFetchTool.java                 fetchArticle
 src/main/java/.../ReadabilityScoreTool.java             scoreReadability
 src/main/java/.../FramingAnalysisTool.java              analyzeFraming
 src/main/java/.../HttpClientConfig.java                 shared HttpClient bean
-src/main/resources/application.yml                      stdio-safe logging + MCP server config
+src/main/resources/application.yml                      MCP server config
 ```
 
 ## Roadmap
@@ -103,7 +105,7 @@ src/main/resources/application.yml                      stdio-safe logging + MCP
 - A deterministic loaded-language counter backed by a lexicon
 - An `@McpPrompt` guided "analyze this article" workflow and an MCP resource exposing the lexicon
 - Hardening `fetchArticle` (response size limits, content-type checks)
-- Switching to the WebMVC transport and deploying remotely over HTTP
+- Deploying the server remotely
 
 ## Status
 
