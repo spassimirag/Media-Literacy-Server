@@ -45,8 +45,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation platform('org.springframework.ai:spring-ai-bom:2.0.0-M6')
 
-    // Swap for spring-ai-starter-mcp-server-webmvc later if you deploy remotely over HTTP.
-    implementation 'org.springframework.ai:spring-ai-starter-mcp-server'
+    implementation 'org.springframework.ai:spring-ai-starter-mcp-server-webmvc'
     // Jackson for building/parsing the Anthropic API JSON (version managed by the Spring Boot BOM).
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     // jsoup for stripping fetched articles down to readable text.
