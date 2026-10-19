@@ -1,4 +1,4 @@
-package com.spassimirag.medialiteracyserver.eval;
+package com.spassimirag.medialiteracyserver.judge;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

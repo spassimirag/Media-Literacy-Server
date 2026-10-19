@@ -1,82 +1,67 @@
 package com.spassimirag.medialiteracyserver;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.spassimirag.medialiteracyserver.judge.JudgeException;
+import com.spassimirag.medialiteracyserver.judge.JudgeResult;
+import com.spassimirag.medialiteracyserver.judge.RubricAnswer;
+import com.spassimirag.medialiteracyserver.judge.RubricJudge;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import java.net.URI;
+import java.io.IOException;
 import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
+import java.nio.charset.StandardCharsets;
 
 @Service
 public class FramingAnalysisTool {
 
-    private static final String ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
-    private static final String MODEL = "claude-sonnet-5-5";
+    private static final String RUBRIC_RESOURCE = "framing-rubric.md";
 
-    private final HttpClient httpClient;
-    private final String apiKey;
-    private final ObjectMapper mapper = new ObjectMapper();
+    private final RubricJudge judge;
 
     public FramingAnalysisTool(HttpClient httpClient,
-                               @Value("${ANTHROPIC_API_KEY:}") String apiKey) {
-        this.httpClient = httpClient;
-        this.apiKey = apiKey;
+                               @Value("${ANTHROPIC_API_KEY:}") String apiKey) throws IOException {
+        if (apiKey == null || apiKey.isBlank()) {
+            this.judge = null;
+        } else {
+            String rubric = new ClassPathResource(RUBRIC_RESOURCE).getContentAsString(StandardCharsets.UTF_8);
+            this.judge = new RubricJudge(httpClient, apiKey, RubricJudge.DEFAULT_MODEL, rubric);
+        }
     }
 
-    @McpTool(description = "Analyzes a piece of text for framing patterns — loaded language, "
-            + "one-sided phrasing, emotionally charged wording — without judging whether the "
-            + "content itself is true or false.")
+    @McpTool(description = "Checks a text against a three-question framing checklist: charged words, "
+            + "built-in blame, and only one side. Returns yes or no for each question, with a short reason "
+            + "quoting the text. Does not judge whether the content itself is true or false.")
     public String analyzeFraming(
             @McpToolParam(description = "The text to analyze, e.g. an article excerpt or a social media post.", required = true)
-            String text) throws Exception {
+            String text) {
 
-        if (apiKey == null || apiKey.isBlank()) {
+        if (judge == null) {
             return "Error: ANTHROPIC_API_KEY environment variable is not set.";
         }
 
-        String prompt = """
-                You are a media literacy assistant. Analyze the following text for framing \
-                patterns only — loaded language, one-sided phrasing, emotionally charged \
-                wording, or missing context. Do NOT judge whether the content is true, false, \
-                or misleading. List 2-4 specific observations, each tied to a phrase from the \
-                text. If the text reads as neutral in tone, say so plainly.
-
-                TEXT:
-                %s
-                """.formatted(text);
-
-        ObjectNode message = mapper.createObjectNode();
-        message.put("role", "user");
-        message.put("content", prompt);
-
-        ObjectNode requestBody = mapper.createObjectNode();
-        requestBody.put("model", MODEL);
-        requestBody.put("max_tokens", 500);
-        requestBody.putArray("messages").add(message);
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(ANTHROPIC_API_URL))
-                .timeout(Duration.ofSeconds(60))
-                .header("x-api-key", apiKey)
-                .header("anthropic-version", "2023-06-01")
-                .header("content-type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(mapper.writeValueAsString(requestBody)))
-                .build();
-
-        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-        if (response.statusCode() != 200) {
-            return "Error calling Anthropic API: HTTP " + response.statusCode() + " — " + response.body();
+        JudgeResult result;
+        try {
+            result = judge.judge(text);
+        } catch (JudgeException e) {
+            return "Error: " + e.getMessage();
         }
 
-        JsonNode root = mapper.readTree(response.body());
-        return root.at("/content/0/text").asText("(no text found in response)");
+        return "Framing checklist results:\n\n"
+                + formatAnswer(1, "Charged words", result.chargedWords())
+                + formatAnswer(2, "Built-in blame", result.builtInBlame())
+                + formatAnswer(3, "Only one side", result.onlyOneSide());
+    }
+
+    private static String formatAnswer(int number, String question, RubricAnswer answer) {
+        String yesNo;
+        if (answer.yes()) {
+            yesNo = "yes";
+        } else {
+            yesNo = "no";
+        }
+        return number + ". " + question + ": " + yesNo + "\n   " + answer.reason() + "\n\n";
     }
 }
