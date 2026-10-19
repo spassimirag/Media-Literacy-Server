@@ -76,8 +76,6 @@ tasks.register('agreement', JavaExec) {
     workingDir = rootDir
 }
 
-// Ship the framing rubric with the server, so docs/framing-rubric.md stays the one source of truth
-// for both the analyzeFraming tool and the eval.
 processResources {
     from('docs/framing-rubric.md')
 }

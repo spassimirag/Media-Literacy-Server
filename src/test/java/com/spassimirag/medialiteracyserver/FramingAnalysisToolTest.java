@@ -18,7 +18,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class FramingAnalysisToolTest {
 
-    // An API reply whose text block holds the judge's JSON answers (quotes escaped, since it's a string inside JSON).
     private static final String JUDGE_REPLY = """
             {"model": "claude-sonnet-5-5", "stop_reason": "end_turn", "content": [{"type": "text", "text": \
             "{\\"charged_words\\": {\\"reason\\": \\"'crisis spirals' is charged.\\", \\"answer\\": \\"yes\\"}, \

@@ -17,10 +17,8 @@ import java.nio.charset.StandardCharsets;
 @Service
 public class FramingAnalysisTool {
 
-    // Copied from docs/framing-rubric.md at build time (see processResources in build.gradle).
     private static final String RUBRIC_RESOURCE = "framing-rubric.md";
 
-    // Null when there's no API key, so the tool can explain the problem instead of failing at startup.
     private final RubricJudge judge;
 
     public FramingAnalysisTool(HttpClient httpClient,
