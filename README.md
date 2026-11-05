@@ -52,6 +52,15 @@ Then in a Claude Code session, `/mcp` shows the connection and its tool list. Tr
 
 After changing the code, run `./gradlew build` again and restart the server.
 
+### Usage limits
+
+Every `analyzeFraming` call makes an Anthropic API request, so the tool has two limits, set in `application.yml`:
+
+- `media-literacy.framing.max-calls-per-day` (default 200): once reached, the tool refuses until midnight UTC. The count is kept in memory, so it restarts from zero when the server restarts.
+- `media-literacy.framing.max-text-chars` (default 10000): longer texts are refused instead of sent to the judge.
+
+Both can be overridden with environment variables, e.g. `MEDIA_LITERACY_FRAMING_MAX_CALLS_PER_DAY=50`.
+
 ## How a tool call flows
 
 The server is a normal web application: Claude Code sends JSON-RPC messages as HTTP POSTs to `/mcp`. Spring AI routes each incoming `tools/call` to the matching `@McpTool` method, the same way Spring MVC routes an HTTP request to a `@GetMapping` method.
