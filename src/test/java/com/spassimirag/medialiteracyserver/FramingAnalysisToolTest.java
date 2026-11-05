@@ -12,6 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
@@ -33,7 +35,7 @@ class FramingAnalysisToolTest {
 
     @Test
     void returnsTheThreeChecklistAnswersWithReasons() throws Exception {
-        FramingAnalysisTool tool = new FramingAnalysisTool(httpClient, "test-key");
+        FramingAnalysisTool tool = new FramingAnalysisTool(httpClient, "test-key", 100, 10_000);
         apiReturns(200, JUDGE_REPLY);
 
         String result = tool.analyzeFraming("The crisis spirals out of control.");
@@ -55,7 +57,7 @@ class FramingAnalysisToolTest {
 
     @Test
     void missingApiKeyReturnsErrorWithoutCallingApi() throws Exception {
-        FramingAnalysisTool tool = new FramingAnalysisTool(httpClient, "");
+        FramingAnalysisTool tool = new FramingAnalysisTool(httpClient, "", 100, 10_000);
 
         String result = tool.analyzeFraming("some text");
 
@@ -65,7 +67,7 @@ class FramingAnalysisToolTest {
 
     @Test
     void errorStatusReturnsErrorMessage() throws Exception {
-        FramingAnalysisTool tool = new FramingAnalysisTool(httpClient, "test-key");
+        FramingAnalysisTool tool = new FramingAnalysisTool(httpClient, "test-key", 100, 10_000);
         apiReturns(401, """
                 {"error": {"message": "invalid x-api-key"}}
                 """);
@@ -73,6 +75,39 @@ class FramingAnalysisToolTest {
         String result = tool.analyzeFraming("some text");
 
         assertTrue(result.startsWith("Error: Anthropic API returned HTTP 401"), result);
+    }
+
+    @Test
+    void textOverLengthLimitReturnsErrorWithoutCallingApi() throws Exception {
+        FramingAnalysisTool tool = new FramingAnalysisTool(httpClient, "test-key", 100, 20);
+
+        String result = tool.analyzeFraming("This sentence is longer than twenty characters.");
+
+        assertTrue(result.startsWith("Error: text is 47 characters long; the limit is 20"), result);
+        verifyNoInteractions(httpClient);
+    }
+
+    @Test
+    void blankTextReturnsErrorWithoutCallingApi() throws Exception {
+        FramingAnalysisTool tool = new FramingAnalysisTool(httpClient, "test-key", 100, 10_000);
+
+        String result = tool.analyzeFraming("   ");
+
+        assertEquals("Error: no text provided.", result);
+        verifyNoInteractions(httpClient);
+    }
+
+    @Test
+    void callsOverDailyLimitReturnErrorWithoutCallingApi() throws Exception {
+        FramingAnalysisTool tool = new FramingAnalysisTool(httpClient, "test-key", 2, 10_000);
+        apiReturns(200, JUDGE_REPLY);
+
+        tool.analyzeFraming("First text.");
+        tool.analyzeFraming("Second text.");
+        String result = tool.analyzeFraming("Third text.");
+
+        assertTrue(result.startsWith("Error: the daily limit for framing analyses has been reached"), result);
+        verify(httpClient, times(2)).send(any(), any());
     }
 
     private void apiReturns(int status, String body) throws Exception {

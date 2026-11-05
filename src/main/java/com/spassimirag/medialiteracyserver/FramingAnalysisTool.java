@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 
 @Service
 public class FramingAnalysisTool {
@@ -20,9 +21,15 @@ public class FramingAnalysisTool {
     private static final String RUBRIC_RESOURCE = "framing-rubric.md";
 
     private final RubricJudge judge;
+    private final DailyCallLimit dailyLimit;
+    private final int maxTextChars;
 
     public FramingAnalysisTool(HttpClient httpClient,
-                               @Value("${ANTHROPIC_API_KEY:}") String apiKey) throws IOException {
+                               @Value("${ANTHROPIC_API_KEY:}") String apiKey,
+                               @Value("${media-literacy.framing.max-calls-per-day}") int maxCallsPerDay,
+                               @Value("${media-literacy.framing.max-text-chars}") int maxTextChars) throws IOException {
+        this.dailyLimit = new DailyCallLimit(maxCallsPerDay, Clock.systemUTC());
+        this.maxTextChars = maxTextChars;
         if (apiKey == null || apiKey.isBlank()) {
             this.judge = null;
         } else {
@@ -40,6 +47,17 @@ public class FramingAnalysisTool {
 
         if (judge == null) {
             return "Error: ANTHROPIC_API_KEY environment variable is not set.";
+        }
+        if (text == null || text.isBlank()) {
+            return "Error: no text provided.";
+        }
+        if (text.length() > maxTextChars) {
+            return "Error: text is " + text.length() + " characters long; the limit is " + maxTextChars
+                    + ". Send a shorter excerpt.";
+        }
+        if (!dailyLimit.tryUse()) {
+            return "Error: the daily limit for framing analyses has been reached. "
+                    + "Try again tomorrow (the limit resets at midnight UTC).";
         }
 
         JudgeResult result;

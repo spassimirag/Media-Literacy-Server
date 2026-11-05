@@ -8,3 +8,8 @@ spring:
         version: 0.1.0
         type: SYNC
         protocol: STREAMABLE
+
+media-literacy:
+  framing:
+    max-calls-per-day: 200
+    max-text-chars: 10000
